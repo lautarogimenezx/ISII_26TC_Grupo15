@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html class="light" lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0" name="viewport" />
+    <title>Alta de Canchas - Turnos YA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="style.css">
+    <script>
+        tailwind.config = { theme: { extend: { colors: { "brand": "#22c55e", "surface": "#f8fafc", "dark": "#0f172a" }, fontFamily: { "sans": ["Inter", "sans-serif"] } } } }
+    </script>
+</head>
+<body class="bg-surface font-sans text-dark antialiased pb-20">
+    <nav class="bg-white/80 backdrop-blur-md border-b border-gray-100">
+        <div class="max-w-3xl mx-auto px-4 py-3 flex justify-between items-center">
+            <span class="text-lg font-extrabold flex items-center gap-2"><span class="material-symbols-rounded text-brand">stadium</span> Alta Deportiva</span>
+            <button onclick="window.cerrarSesion()" class="text-sm font-bold text-red-600 hover:text-red-700 bg-red-50 px-3 py-1.5 rounded-lg transition-colors border border-red-100">Cerrar Sesión</button>
+        </div>
+    </nav>
+    <main class="max-w-3xl mx-auto px-4 py-8">
+        <div class="bg-indigo-50/50 p-6 rounded-2xl shadow-sm border border-indigo-100 mb-6 relative overflow-hidden">
+            <div class="absolute -right-4 -top-4 w-24 h-24 bg-indigo-500/10 rounded-full blur-2xl"></div>
+            <h2 class="text-xl font-bold mb-4 flex items-center gap-2 text-indigo-900">
+                <span class="material-symbols-rounded text-indigo-500">store</span>
+                Datos Comerciales del Club
+            </h2>
+            <form id="global-config-form" class="space-y-4" onsubmit="event.preventDefault(); window.guardarConfigGlobal();">
+                <div>
+                    <label class="block text-xs uppercase tracking-wider font-extrabold text-indigo-600 mb-1">Nombre Comercial de la App</label>
+                    <input type="text" id="club-global-name" required placeholder="Ej. Turnos YA" class="w-full border border-indigo-200/60 rounded-xl px-3 py-2.5 bg-white font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all">
+                </div>
+                <div>
+                    <label class="block text-xs uppercase tracking-wider font-extrabold text-indigo-600 mb-1">WhatsApp Recepción (con código de país ej: 54911...)</label>
+                    <input type="number" id="club-global-ws" required placeholder="5491122334455" class="w-full border border-indigo-200/60 rounded-xl px-3 py-2.5 bg-white font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs uppercase tracking-wider font-extrabold text-indigo-600 mb-1">Mensaje de Transferencia (CBU/Alias)</label>
+                    <textarea id="club-global-bank" required rows="2" placeholder="CBU: 000...&#10;Alias: miclub.mp" class="w-full border border-indigo-200/60 rounded-xl px-3 py-2.5 bg-white font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-sm leading-snug font-mono resize-none"></textarea>
+                </div>
+                <button type="submit" id="btn-save-global" class="w-full mt-2 h-12 bg-indigo-600 text-white font-extrabold text-base rounded-xl shadow-lg shadow-indigo-600/20 hover:bg-indigo-700 active:scale-95 transition-all">
+                    Actualizar Datos del Club
+                </button>
+            </form>
+        </div>
+        
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-6">
+            <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                <span class="material-symbols-rounded text-brand">add_circle</span>
+                Registrar Nueva Cancha
+            </h2>
+            <form id="court-form" class="space-y-4" onsubmit="event.preventDefault(); window.guardarCancha();">
+                <div>
+                    <label class="block text-xs uppercase tracking-wider font-extrabold text-gray-500 mb-1">Nombre Identificador</label>
+                    <input type="text" id="court-name" required placeholder="Ej. Fútbol 5 - Panorámica" class="w-full border border-gray-200 rounded-xl px-3 py-3 bg-gray-50 font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand transition-all">
+                </div>
+                
+                <div>
+                    <label class="block text-xs uppercase tracking-wider font-extrabold text-gray-500 mb-1">Deporte Asociado (Categoría)</label>
+                    <select id="court-type" required class="w-full border border-gray-200 rounded-xl px-3 py-3 bg-gray-50 font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand transition-all">
+                        <option value="padel">Pádel</option>
+                        <option value="futbol">Fútbol</option>
+                        <option value="tenis">Tenis</option>
+                        <option value="basquet">Básquet</option>
+                        <option value="voley">Vóley</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider font-extrabold text-gray-500 mb-1">Apertura (Hora)</label>
+                        <input type="time" id="court-open" required class="w-full border border-gray-200 rounded-xl px-3 py-3 bg-gray-50 font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider font-extrabold text-gray-500 mb-1">Cierre (Hora)</label>
+                        <input type="time" id="court-close" required class="w-full border border-gray-200 rounded-xl px-3 py-3 bg-gray-50 font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand transition-all">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs uppercase tracking-wider font-extrabold text-gray-500 mb-1">Precio por Turno ($)</label>
+                    <input type="number" id="court-price" min="0" required placeholder="15000" class="w-full border border-gray-200 rounded-xl px-3 py-3 bg-gray-50 font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand transition-all">
+                </div>
+                
+                <button type="submit" id="btn-save" class="w-full mt-4 h-14 bg-brand text-white font-extrabold text-lg rounded-xl shadow-lg shadow-brand/30 hover:bg-green-500 active:scale-95 transition-all">
+                    Guardar Cancha
+                </button>
+                <button type="button" id="btn-cancel" onclick="window.cancelarEdicion()" class="hidden w-full h-12 bg-gray-100 text-gray-600 font-bold text-base rounded-xl hover:bg-gray-200 transition-all mt-2">
+                    Cancelar Edición
+                </button>
+            </form>
+        </div>
+        
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-6">
+            <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                <span class="material-symbols-rounded text-brand">list</span>
+                Canchas Existentes
+            </h2>
+            <div id="courts-list" class="grid gap-3">
+                <p class="text-sm text-gray-400">Cargando...</p>
+            </div>
+        </div>
+    </main>
+
+    <script type="module">
+        import { CanchaController } from '../capaDeLogica/canchaController.js';
+        import { ConfigController } from '../capaDeLogica/configController.js';
+        import { AuthService } from '../capaDeLogica/authService.js';
+        import { UI } from './ui.js';
+
+        let globalCanchas = [];
+        let editandoId = null;
+
+        // Guardián de seguridad (Auth Guard)
+        window.addEventListener('load', async () => {
+            await AuthService.requireAuth('login.html');
+            window.cargarConfigGlobal();
+        });
+
+        window.cerrarSesion = async () => {
+            await AuthService.logout();
+            window.location.href = 'login.html';
+        };
+
+        // Configuración Global del Club
+        window.cargarConfigGlobal = async () => {
+            const config = await ConfigController.getConfig();
+            if (config) {
+                document.getElementById('club-global-name').value = config.nombre;
+                document.getElementById('club-global-ws').value = config.telefono_whatsapp;
+                document.getElementById('club-global-bank').value = config.detalles_bancarios;
+            }
+        };
+
+        window.guardarConfigGlobal = async () => {
+            const btn = document.getElementById('btn-save-global');
+            btn.innerHTML = "Guardando...";
+            btn.disabled = true;
+
+            const datos = {
+                nombre: document.getElementById('club-global-name').value.trim(),
+                telefono_whatsapp: document.getElementById('club-global-ws').value.trim(),
+                detalles_bancarios: document.getElementById('club-global-bank').value.trim()
+            };
+
+            const result = await ConfigController.updateConfig(datos);
+            if(result.success) {
+                UI.alert("Configuración comercial actualizada correctamente.", "Éxito", "success");
+            } else {
+                UI.alert("Error de permisos operando club_config: " + result.error, "Error", "error");
+            }
+
+            btn.innerHTML = "Actualizar Datos del Club";
+            btn.disabled = false;
+        };
+
+        // Hacer disponible la función globalmente para el form
+        window.guardarCancha = async () => {
+            const btn = document.getElementById('btn-save');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = editandoId ? "Actualizando..." : "Guardando...";
+            btn.disabled = true;
+
+            const datos = {
+                nombre: document.getElementById('court-name').value.trim(),
+                tipo_deporte: document.getElementById('court-type').value,
+                hora_apertura: document.getElementById('court-open').value,
+                hora_cierre: document.getElementById('court-close').value,
+                precio: document.getElementById('court-price').value
+            };
+
+            let result;
+            if (editandoId) {
+                result = await CanchaController.editarCancha(editandoId, datos);
+            } else {
+                result = await CanchaController.createCancha(datos.nombre, datos.tipo_deporte, datos.hora_apertura, datos.hora_cierre, datos.precio);
+            }
+
+            btn.innerHTML = editandoId ? "Actualizar Cancha" : "Guardar Cancha";
+            btn.disabled = false;
+
+            if (result.success) {
+                UI.alert(editandoId ? "Cancha actualizada con éxito." : "Cancha registrada con éxito.", "Guardado Exitoso", "success");
+                window.cancelarEdicion();
+                window.cargarListaCanchas();
+            } else {
+                UI.alert("Error al " + (editandoId ? "actualizar" : "guardar") + ": " + result.error, "Fallo al guardar", "error");
+            }
+        };
+
+        window.cargarListaCanchas = async () => {
+            const container = document.getElementById('courts-list');
+            globalCanchas = await CanchaController.getCanchas();
+
+            if (globalCanchas.length === 0) {
+                container.innerHTML = '<p class="text-sm text-gray-500 py-4">No hay canchas configuradas en la base de datos.</p>';
+                return;
+            }
+
+            container.innerHTML = globalCanchas.map(c => `
+                <div class="p-4 border border-gray-100 rounded-xl bg-gray-50 flex justify-between items-center">
+                    <div>
+                        <p class="font-bold text-gray-900">${c.nombre}</p>
+                        <p class="text-xs text-gray-500 uppercase tracking-wider font-semibold">${c.tipo_deporte} • ${c.hora_apertura ? c.hora_apertura.substring(0, 5) : ''} a ${c.hora_cierre ? c.hora_cierre.substring(0, 5) : ''} • $${c.precio}</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="window.prepararEdicion('${c.id}')" class="text-blue-500 hover:text-blue-700 bg-white shadow-sm rounded-full p-2 border border-gray-100 transition-colors" title="Editar Cancha">
+                            <span class="material-symbols-rounded block text-sm">edit</span>
+                        </button>
+                        <button onclick="window.borrarCancha('${c.id}')" class="text-red-400 hover:text-red-600 bg-white shadow-sm rounded-full p-2 border border-gray-100 transition-colors" title="Eliminar Cancha">
+                            <span class="material-symbols-rounded block text-sm">delete</span>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        };
+
+        window.prepararEdicion = (id) => {
+            const cancha = globalCanchas.find(c => c.id === id);
+            if(!cancha) return;
+
+            editandoId = id;
+            document.getElementById('court-name').value = cancha.nombre;
+            document.getElementById('court-type').value = cancha.tipo_deporte;
+            document.getElementById('court-open').value = cancha.hora_apertura;
+            document.getElementById('court-close').value = cancha.hora_cierre;
+            document.getElementById('court-price').value = cancha.precio;
+
+            document.getElementById('btn-save').innerHTML = "Actualizar Cancha";
+            document.getElementById('btn-save').classList.remove('bg-brand', 'hover:bg-green-500');
+            document.getElementById('btn-save').classList.add('bg-blue-600', 'hover:bg-blue-700');
+            document.getElementById('btn-cancel').classList.remove('hidden');
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        window.cancelarEdicion = () => {
+            editandoId = null;
+            document.getElementById('court-form').reset();
+            
+            document.getElementById('btn-save').innerHTML = "Guardar Cancha";
+            document.getElementById('btn-save').classList.remove('bg-blue-600', 'hover:bg-blue-700');
+            document.getElementById('btn-save').classList.add('bg-brand', 'hover:bg-green-500');
+            document.getElementById('btn-cancel').classList.add('hidden');
+        };
+
+        window.borrarCancha = (id) => {
+            UI.confirm(
+                "¿Estás seguro de eliminar esta cancha? Si tiene reservas asignadas, se producirá un error debido a la integridad referencial.",
+                async () => {
+                    const result = await CanchaController.eliminarCancha(id);
+                    if (result.success) {
+                        window.cargarListaCanchas();
+                    } else {
+                        UI.alert("Error RLS o Integridad Relacional: " + result.error, "No se pudo borrar", "error");
+                    }
+                },
+                "Borrar Cancha"
+            );
+        };
+
+        // Carga inicial
+        window.cargarListaCanchas();
+    </script>
+</body>
+</html>
