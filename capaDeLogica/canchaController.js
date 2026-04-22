@@ -25,9 +25,6 @@ export class CanchaController {
                 precio
             );
 
-            // Podemos loguear requisitos si quisiéramos para validar el Factory
-            console.log("Creando cancha con Factory:", nuevaCanchaObj.obtenerRequisitos());
-
             // Soporte para Múltiples Clubes (SaaS) - Obtener ID del club base
             const { data: clubConfig } = await supabaseClient.from('club_config').select('id').limit(1).single();
             const clubId = clubConfig ? clubConfig.id : null;
