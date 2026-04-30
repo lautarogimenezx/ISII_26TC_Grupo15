@@ -2,6 +2,14 @@
 
 Una aplicación web moderna, rápida y responsiva diseñada para facilitar la gestión y reserva de canchas deportivas. Construida con un enfoque minimalista y optimizada tanto para administradores como para clientes.
 
+## Cambios Recientes (Adaptación a Cátedra)
+
+El sistema ha sido refactorizado para cumplir estrictamente con los diagramas de Entidad-Relación (ER) y de Secuencia provistos por la cátedra:
+- **Normalización de Base de Datos**: Implementación de tablas maestras para `tipo_deporte` y `estado_reserva`.
+- **Relaciones Relacionales**: Reestructuración de la tabla `canchas` y `reserva` (antes `reservas`) para usar claves foráneas normalizadas e integridad referencial.
+- **Validación de Negocio**: Incorporación de `validarDatos()` en la clase `Cancha` antes de la persistencia.
+- **Flujo de Interfaz**: Refactorización de `configuracion.html` para seguir el flujo de carga dinámica de deportes y formularios dinámicos.
+
 ## Características Principales
 
 - **Interfaz Intuitiva y Moderna**: Diseño responsivo y amigable para dispositivos móviles usando TailwindCSS.
@@ -19,39 +27,30 @@ El proyecto está diseñado bajo un estricto patrón de **Arquitectura Multicapa
 ```text
 Turnos_YA/
 ├── capaDePresentacion/          # Capa Nivel 1: Interfaz de Usuario (UI)
-│   ├── configuracion.html       # Interfaz de alta de canchas y definición de datos comerciales
+│   ├── configuracion.html       # Interfaz dinámica de gestión de canchas y club
 │   ├── login.html               # Formulario de autenticación administrativa
 │   ├── style.css                # Hoja de estilos complementaria (Tailwind)
 │   └── ui.js                    # Utilidades de DOM globales (Renderizado de alertas y dialogos)
 │
 ├── capaDeLogica/                # Capa Nivel 2: Reglas de Negocio y Controladores
-│   ├── canchaController.js      # Controlador encargado del CRUD de Canchas
+│   ├── canchaController.js      # Controlador encargado del CRUD y validación de Canchas
+│   ├── tipoDeporte.js           # Servicio para gestión de tipos de deportes desde BD
 │   ├── authService.js           # Validador y gestor seguro de las sesiones
-│   ├── configController.js      # Gestiona datos y configuraciones estables del sistema
-│   ├── canchaFactory.js         # Implementación del patrón Factory Method para estructurar canchas
-│   └── cancha.js                # Modelo abstracto del dominio
+│   ├── configController.js      # Gestiona datos y configuraciones globales
+│   ├── canchaFactory.js         # Implementación del patrón Factory Method
+│   └── cancha.js                # Modelo de dominio con validaciones estáticas
 │
 └── capaDeDatos/                 # Capa Nivel 3: Persistencia y Acceso a Datos
-    ├── supabaseClient.js        # Patrón Singleton para conexión a BD y funciones SQL
-    └── tablas_sql/              # Scripts SQL para inicializar la base de datos
+    ├── supabaseClient.js        # Patrón Singleton y funciones de inserción relacional
+    └── tablas_sql/              # Scripts SQL normalizados (ER compliant)
 ```
-
-**¿Cómo es el flujo de las cosas?**
-1. Los archivos ubicados en la `capaDePresentacion` (Vistas) capturan la intención del usuario a través del DOM y eventos HTML.
-2. Estos eventos son delegados inmediatamente a los **Controladores** y **Servicios** correspondientes dentro de la `capaDeLogica`, garantizando que la UI no decida nada.
-3. La lógica examina el negocio (por ejemplo, usando `validarSolapamiento`), y si está todo en orden, se comunica bidireccionalmente con la `capaDeDatos` donde se orquestan las consultas asíncronas de Supabase.
 
 ## Tecnologías Utilizadas
 
-- **Frontend**: HTML5, CSS3, Vanilla JavaScript
+- **Frontend**: HTML5, CSS3, Vanilla JavaScript (ES6 Modules)
 - **Estilos**: [TailwindCSS](https://tailwindcss.com/)
-- **Backend as a Service (BaaS)**: [Supabase](https://supabase.com/) (Base de datos PostgreSQL y Autenticación)
+- **BaaS**: [Supabase](https://supabase.com/) (PostgreSQL & Auth)
 - **Iconografía**: Google Material Symbols
 
-## Vistas Principales
-
-- `/Capa_de_Presentacion/login.html` -> Ingreso seguro para el personal/administradores.
-- `/Capa_de_Presentacion/configuracion.html` -> Ajuste de reglas de negocio, horarios del predio y datos de pago.
-
 ---
-_Desarrollado para optimizar la gestión de centros deportivos._
+_Desarrollado para optimizar la gestión de centros deportivos siguiendo lineamientos académicos._

@@ -4,14 +4,44 @@ export const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdX
 // Instancia única (Singleton) del cliente Supabase
 export const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-export async function createReserva(idJugador, idCancha, fecha, hora) {
-    return await supabaseClient.from('reservas').insert([{
-        jugador_id: idJugador,
-        cancha_id: idCancha,
-        fecha: fecha,
-        hora: hora,
-        precio: arguments[4] || 0 // Fallback if precio was included but technically optional for this function signature.
-    }]).select().single();
+export async function createReserva(idJugador, idCancha, fecha, hora, total = 0) {
+    // 1. Obtener un estado por defecto (Pendiente)
+    const { data: estado } = await supabaseClient
+        .from('estado_reserva')
+        .select('id_estado')
+        .eq('descripcion', 'Pendiente')
+        .single();
+
+    if (!estado) throw new Error("No se encontró el estado 'Pendiente' en la base de datos.");
+
+    // 2. Insertar en la tabla maestra 'reserva'
+    const { data: reserva, error: errR } = await supabaseClient
+        .from('reserva')
+        .insert([{
+            id_jugador: idJugador,
+            id_estado: estado.id_estado,
+            total: total
+        }])
+        .select()
+        .single();
+
+    if (errR) throw errR;
+
+    // 3. Insertar en 'detalle_reserva'
+    const { data: detalle, error: errD } = await supabaseClient
+        .from('detalle_reserva')
+        .insert([{
+            id_reserva: reserva.id_reserva,
+            id_cancha: idCancha,
+            fecha_reserva: fecha,
+            hora_reserva: hora
+        }])
+        .select()
+        .single();
+
+    if (errD) throw errD;
+
+    return { reserva, detalle };
 }
 
 console.log("¡Cliente Supabase (Módulo) Iniciado!");
