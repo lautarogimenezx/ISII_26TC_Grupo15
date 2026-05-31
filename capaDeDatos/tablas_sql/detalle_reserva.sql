@@ -3,5 +3,7 @@ CREATE TABLE public.detalle_reserva (
     id_reserva uuid REFERENCES public.reserva(id_reserva) ON DELETE CASCADE,
     id_cancha uuid REFERENCES public.canchas(id_cancha) ON DELETE CASCADE,
     fecha_reserva date NOT NULL,
-    hora_reserva text NOT NULL
+    hora_reserva text NOT NULL,
+    monto_total numeric,
+    id_pago uuid REFERENCES public.estado_pago(id_pago) ON DELETE CASCADE
 );
