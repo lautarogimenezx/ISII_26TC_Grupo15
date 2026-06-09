@@ -1,4 +1,8 @@
-import { CanchaController } from '../capaDeLogica/canchaController.js';
+/**
+ * @file Lógica del panel administrativo privado.
+ * @description Permite a los administradores gestionar canchas, parámetros globales y visualizar cancelaciones.
+ */
+import { Cancha } from '../capaDeLogica/cancha.js';
 import { ConfigController } from '../capaDeLogica/configController.js';
 import { AuthService } from '../capaDeLogica/authService.js';
 import { Tipo_Deporte } from '../capaDeLogica/tipoDeporte.js';
@@ -107,9 +111,9 @@ window.guardarCancha = async () => {
 
     let result;
     if (editandoId) {
-        result = await CanchaController.actualizarCancha(editandoId, datos);
+        result = await Cancha.actualizarCancha(editandoId, datos);
     } else {
-        result = await CanchaController.agregarCancha(datos.nombre, datos.id_deporte, datos.nombre_deporte, datos.hora_apertura, datos.hora_cierre, datos.precio);
+        result = await Cancha.agregarCancha(datos.nombre, datos.id_deporte, datos.nombre_deporte, datos.hora_apertura, datos.hora_cierre, datos.precio);
     }
 
     btn.innerHTML = editandoId ? "Actualizar Cancha" : "Guardar Cancha";
@@ -128,7 +132,7 @@ window.guardarCancha = async () => {
 window.cargarListaCanchas = async () => {
     const container = document.getElementById('courts-list');
     const countLabel = document.getElementById('courts-count');
-    globalCanchas = await CanchaController.getCanchas();
+    globalCanchas = await Cancha.getCanchas();
 
     if (globalCanchas.length === 0) {
         container.innerHTML = '<p class="text-sm text-gray-500 py-4">No hay canchas configuradas en la base de datos.</p>';
@@ -226,7 +230,7 @@ window.borrarCancha = (id_cancha) => {
     UI.confirm(
         "¿Estás seguro de eliminar esta cancha? Si tiene reservas asignadas, se producirá un error debido a la integridad referencial.",
         async () => {
-            const result = await CanchaController.eliminarCancha(id_cancha);
+            const result = await Cancha.eliminarCancha(id_cancha);
             if (result.success) {
                 window.cargarListaCanchas();
             } else {

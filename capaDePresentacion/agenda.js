@@ -1,5 +1,10 @@
-import { ReservaController } from '../capaDeLogica/reservaController.js';
-import { CanchaController } from '../capaDeLogica/canchaController.js';
+/**
+ * @file Lógica de interacción y renderizado para la vista pública de Agenda.
+ * @description Orquesta la interfaz con las reglas de negocio de la Capa de Lógica.
+ */
+import { Reserva } from '../capaDeLogica/reserva.js';
+import { Jugador } from '../capaDeLogica/jugador.js';
+import { Cancha } from '../capaDeLogica/cancha.js';
 import { ConfigController } from '../capaDeLogica/configController.js';
 import { UI } from './ui.js';
 
@@ -44,9 +49,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('club-titular').innerText = lines.length > 1 ? lines[1] : "Titular";
     }
 
-    // Cargar canchas y jugadores pre-fetched para autocompletado instantáneo
-    canchasData = await CanchaController.getCanchas();
-    todosLosJugadores = await ReservaController.obtenerTodosJugadores();
+    canchasData = await Cancha.getCanchas();
+    todosLosJugadores = await Jugador.obtenerTodosJugadores();
     seleccionarFecha(currentDate);
 
     // Configurar listener email interactivo en tiempo real
@@ -181,13 +185,18 @@ function inicializarCalendario() {
     container.classList.add('cursor-grab');
 }
 
+/**
+ * Actualiza la matriz de turnos para una fecha seleccionada consultando la disponibilidad de cada Cancha.
+ * @param {Date|string} dateObj - Fecha seleccionada
+ */
 async function seleccionarFecha(dateObj) {
     // Formato YYYY-MM-DD local
-    const tzoffset = (new Date()).getTimezoneOffset() * 60000; // offset in milliseconds
-    selectedDateStr = (new Date(dateObj - tzoffset)).toISOString().split('T')[0];
+    const date = dateObj instanceof Date ? dateObj : new Date(dateObj);
+    const tzoffset = (new Date()).getTimezoneOffset() * 60000;
+    selectedDateStr = (new Date(date - tzoffset)).toISOString().split('T')[0];
     
     const labelOptions = { day: 'numeric', month: 'long' };
-    document.getElementById('selected-date-label').innerText = dateObj.toLocaleDateString('es-ES', labelOptions);
+    document.getElementById('selected-date-label').innerText = date.toLocaleDateString('es-ES', labelOptions);
     
     await renderizarCanchas();
 }
@@ -229,7 +238,7 @@ async function renderizarCanchas() {
 
         for (const cancha of canchas) {
             // Obtener horarios disponibles
-            const matriz = await ReservaController.calcularDisponibilidadUI(cancha, selectedDateStr);
+            const matriz = await Cancha.calcularDisponibilidadUI(cancha, selectedDateStr);
             
             const canchaHtml = document.createElement('div');
             canchaHtml.className = "bg-white p-5 rounded-3xl shadow-sm border border-gray-100 mb-6";
@@ -333,6 +342,9 @@ window.copiarAlias = () => {
     UI.alert('Alias copiado al portapapeles', 'Copiado', 'success');
 };
 
+/**
+ * Ejecuta el flujo transaccional de confirmación de reserva invocando a la clase Reserva.
+ */
 window.procesarReserva = async () => {
     const btn = document.getElementById('btn-confirmar');
     btn.innerHTML = '<span class="animate-spin material-symbols-rounded">refresh</span> Procesando...';
@@ -344,7 +356,7 @@ window.procesarReserva = async () => {
     const metodoPago = document.querySelector('input[name="metodo-pago"]:checked').value;
     
     try {
-        const resultado = await ReservaController.confirmarReservaCompleta(
+        const resultado = await Reserva.confirmarReservaCompleta(
             email, nombre, telefono, 
             turnoSeleccionado, 
             metodoPago
@@ -433,7 +445,7 @@ window.buscarReservasActivas = async () => {
     container.innerHTML = '<div class="text-center py-8"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-brand mx-auto"></div></div>';
     
     try {
-        const reservas = await ReservaController.obtenerReservasActivasPorEmail(email);
+        const reservas = await Reserva.obtenerReservasActivasPorEmail(email);
         
         if (reservas.length === 0) {
             container.innerHTML = `
@@ -523,7 +535,7 @@ window.confirmarCancelarTurno = (id_reserva, cancha, fecha, hora) => {
             container.innerHTML = '<div class="text-center py-12"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-brand mx-auto mb-3"></div><p class="text-xs text-gray-500 font-bold">Cancelando reserva...</p></div>';
             
             try {
-                const resultado = await ReservaController.cancelarReserva(id_reserva);
+                const resultado = await Reserva.cancelarReserva(id_reserva);
                 if (resultado.success) {
                     UI.alert('Tu reserva ha sido cancelada correctamente y el horario ha sido liberado.', 'Cancelación Exitosa', 'success');
                     await buscarReservasActivas();
