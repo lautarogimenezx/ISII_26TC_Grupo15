@@ -254,3 +254,17 @@ export class CanchaTenis extends Cancha {
         super(id_cancha, nombre, hora_apertura, hora_cierre, precio, id_deporte);
     }
 }
+
+/** @class */
+export class CanchaBasquet extends Cancha {
+    constructor(id_cancha, nombre, hora_apertura, hora_cierre, precio, id_deporte) {
+        super(id_cancha, nombre, hora_apertura, hora_cierre, precio, id_deporte);
+    }
+}
+
+/** @class */
+export class CanchaVoley extends Cancha {
+    constructor(id_cancha, nombre, hora_apertura, hora_cierre, precio, id_deporte) {
+        super(id_cancha, nombre, hora_apertura, hora_cierre, precio, id_deporte);
+    }
+}

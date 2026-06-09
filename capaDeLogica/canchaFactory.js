@@ -1,4 +1,13 @@
-import { Cancha, CanchaFutbol, CanchaPadel, CanchaTenis } from './cancha.js';
+import { Cancha, CanchaFutbol, CanchaPadel, CanchaTenis, CanchaBasquet, CanchaVoley } from './cancha.js';
+
+// Objeto que asocia el nombre exacto del deporte (según el select de la UI) con la clase de dominio.
+const RegistroDeCanchas = {
+    'Fútbol': CanchaFutbol,
+    'Pádel': CanchaPadel,
+    'Tenis': CanchaTenis,
+    'Básquet': CanchaBasquet,
+    'Vóley': CanchaVoley
+};
 
 /**
  * Factory Method para instanciar subclases de Cancha según el deporte.
@@ -14,20 +23,16 @@ export class CanchaFactory {
      * @param {string} hora_apertura 
      * @param {string} hora_cierre 
      * @param {number} precio 
-     * @returns {Cancha} Una instancia de CanchaFutbol, CanchaPadel, CanchaTenis o genérica.
+     * @returns {Cancha} Una instancia específica de la cancha o genérica.
      */
     static crearCancha(id_cancha, nombre, id_deporte, nombre_deporte, hora_apertura, hora_cierre, precio) {
-        const tipoLower = nombre_deporte ? nombre_deporte.toLowerCase() : '';
+        // 1. Buscamos la clase en el registro usando la descripción literal del deporte
+        const ClaseAInstanciar = RegistroDeCanchas[nombre_deporte];
 
-        if (tipoLower.includes('futbol') || tipoLower.includes('fútbol')) {
-            return new CanchaFutbol(id_cancha, nombre, hora_apertura, hora_cierre, precio, id_deporte);
-        } else if (tipoLower.includes('padel') || tipoLower.includes('pádel')) {
-            return new CanchaPadel(id_cancha, nombre, hora_apertura, hora_cierre, precio, id_deporte);
-        } else if (tipoLower.includes('tenis')) {
-            return new CanchaTenis(id_cancha, nombre, hora_apertura, hora_cierre, precio, id_deporte);
-        } else {
-            // Fallback genérico a Cancha
-            return new Cancha(id_cancha, nombre, hora_apertura, hora_cierre, precio, id_deporte);
-        }
+        // 2. Si el deporte no está registrado, utilizamos la clase genérica Cancha
+        const ClaseFinal = ClaseAInstanciar ? ClaseAInstanciar : Cancha;
+
+        // 3. Instanciamos dinámicamente y retornamos el objeto sin usar condicionales
+        return new ClaseFinal(id_cancha, nombre, hora_apertura, hora_cierre, precio, id_deporte);
     }
 }
