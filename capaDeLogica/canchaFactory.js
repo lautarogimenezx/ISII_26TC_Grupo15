@@ -1,13 +1,13 @@
 import { Cancha, CanchaFutbol, CanchaPadel, CanchaTenis, CanchaBasquet, CanchaVoley } from './cancha.js';
 
-// Objeto que asocia el nombre exacto del deporte (según el select de la UI) con la clase de dominio.
-const RegistroDeCanchas = {
+// Objeto que asocia el nombre exacto del deporte con la clase de dominio.
+const getRegistroDeCanchas = () => ({
     'Fútbol': CanchaFutbol,
     'Pádel': CanchaPadel,
     'Tenis': CanchaTenis,
     'Básquet': CanchaBasquet,
     'Vóley': CanchaVoley
-};
+});
 
 /**
  * Factory Method para instanciar subclases de Cancha según el deporte.
@@ -27,7 +27,7 @@ export class CanchaFactory {
      */
     static crearCancha(id_cancha, nombre, id_deporte, nombre_deporte, hora_apertura, hora_cierre, precio) {
         // 1. Buscamos la clase en el registro usando la descripción literal del deporte
-        const ClaseAInstanciar = RegistroDeCanchas[nombre_deporte];
+        const ClaseAInstanciar = getRegistroDeCanchas()[nombre_deporte];
 
         // 2. Si el deporte no está registrado, utilizamos la clase genérica Cancha
         const ClaseFinal = ClaseAInstanciar ? ClaseAInstanciar : Cancha;

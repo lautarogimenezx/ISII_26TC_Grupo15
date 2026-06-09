@@ -183,43 +183,24 @@ export class Reserva {
      */
     static async obtenerReservasActivasPorEmail(email) {
         try {
-            const jugador = await Jugador.buscarJugador(email);
-            if (!jugador) return [];
-
-            const { data: reservas, error } = await supabaseClient
-                .from('reserva')
-                .select(`
-                    id_reserva,
-                    total,
-                    estado_reserva!inner(id_estado, descripcion),
-                    detalle_reserva(
-                        fecha_reserva,
-                        hora_reserva,
-                        canchas(nombre),
-                        estado_pago(estado, metodo_pago(descripcion))
-                    )
-                `)
-                .eq('id_jugador', jugador.id_jugador)
-                .neq('estado_reserva.descripcion', 'Cancelado');
+            // Llamamos al procedimiento almacenado en la base de datos
+            const { data, error } = await supabaseClient
+                .rpc('obtener_reservas_activas_por_email', { p_email: email });
 
             if (error) throw error;
-            
-            const tzoffset = (new Date()).getTimezoneOffset() * 60000;
-            const todayStr = (new Date(Date.now() - tzoffset)).toISOString().split('T')[0];
 
-            return (reservas || []).map(r => {
-                const det = r.detalle_reserva && r.detalle_reserva[0];
-                return {
-                    id_reserva: r.id_reserva,
-                    total: r.total,
-                    estado: r.estado_reserva?.descripcion,
-                    fecha: det?.fecha_reserva,
-                    hora: det?.hora_reserva,
-                    cancha: det?.canchas?.nombre || 'Cancha',
-                    estadoPago: det?.estado_pago?.estado || 'Pendiente',
-                    metodoPago: det?.estado_pago?.metodo_pago?.descripcion || 'No definido'
-                };
-            }).filter(r => r.estado !== 'Cancelado' && r.fecha && r.fecha >= todayStr);
+            // Mapeamos los resultados devueltos por el procedimiento almacenado
+            // al formato que espera la interfaz (camelCase)
+            return (data || []).map(r => ({
+                id_reserva: r.id_reserva,
+                total: r.total,
+                estado: r.estado,
+                fecha: r.fecha,
+                hora: r.hora,
+                cancha: r.cancha,
+                estadoPago: r.estado_pago,
+                metodoPago: r.metodo_pago
+            }));
         } catch (e) {
             console.error("Error al obtener reservas por email:", e);
             throw e;
