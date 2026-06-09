@@ -1,8 +1,15 @@
 import { supabaseClient } from '../capaDeDatos/supabaseClient.js';
 
+/**
+ * Servicio encargado de la autenticación administrativa.
+ * @class
+ */
 export class AuthService {
     /**
-     * Inicia sesión con correo y contraseña.
+     * Valida las credenciales de inicio de sesión administrativo.
+     * @param {string} email 
+     * @param {string} password 
+     * @returns {Object} {success, error}
      */
     static async login(email, password) {
         const { data, error } = await supabaseClient.auth.signInWithPassword({
@@ -25,7 +32,8 @@ export class AuthService {
     }
 
     /**
-     * Comprueba si hay una sesión activa, si no la hay redirige.
+     * Protege rutas redireccionando si no está autenticado.
+     * @param {string} redirectTo 
      */
     static async requireAuth(redirectTo = 'login.html') {
         const { data: { user }, error } = await supabaseClient.auth.getUser();
@@ -37,7 +45,8 @@ export class AuthService {
     }
 
     /**
-     * Chequea si el usuario está autenticado sin redirigir
+     * Retorna verdadero si hay una sesión de admin iniciada.
+     * @returns {boolean}
      */
     static async isAuthenticated() {
         const { data: { user } } = await supabaseClient.auth.getUser();

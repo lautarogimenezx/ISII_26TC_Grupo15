@@ -1,8 +1,13 @@
 import { supabaseClient } from '../capaDeDatos/supabaseClient.js';
 
+/**
+ * Controlador global para la configuración de la UI (ej. nombre del club).
+ * @class
+ */
 export class ConfigController {
     /**
-     * Obtiene la configuración pública global (1 fila)
+     * Obtiene la configuración del club desde BD.
+     * @returns {Promise<Object>}
      */
     static async getConfig() {
         const { data, error } = await supabaseClient
@@ -19,7 +24,9 @@ export class ConfigController {
     }
 
     /**
-     * Actualiza la configuración global del club (sólo Admin validado por RLS)
+     * Actualiza la configuración visual del club en BD.
+     * @param {Object} datos - Atributos de configuración.
+     * @returns {Promise<Object>} {success, error}
      */
     static async updateConfig(datos) {
         const { error } = await supabaseClient
