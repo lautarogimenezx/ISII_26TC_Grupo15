@@ -47,7 +47,7 @@ export class Jugador {
     }
 
     /**
-     * Registra un nuevo jugador en la base de datos.
+     * Registra un nuevo jugador en la base de datos usando el procedimiento almacenado.
      * @param {string} email - Correo electrónico.
      * @param {string} nombre - Nombre completo.
      * @param {string} telefono - Teléfono de contacto.
@@ -55,23 +55,41 @@ export class Jugador {
      * @throws {Error} Si falla la inserción en la BD.
      */
     static async crearJugador(email, nombre, telefono) {
-        // Instanciamos el objeto en memoria primero usando el constructor (id null porque aún no se generó)
-        const jugadorTemporal = new Jugador(null, nombre, email, telefono);
-
         const { data, error } = await supabaseClient
-            .from('jugadores')
-            .insert([{ 
-                email: jugadorTemporal.email, 
-                nombre: jugadorTemporal.nombre, 
-                telefono: jugadorTemporal.telefono 
-            }])
-            .select()
-            .single();
+            .rpc('crear_jugador', {
+                p_email: email,
+                p_nombre: nombre,
+                p_telefono: telefono
+            });
         
         if (error) throw new Error("Error creando jugador: " + error.message);
+        if (!data || data.length === 0) throw new Error("Error creando jugador: no se retornaron datos.");
         
-        // Le asignamos el ID real generado por la BD al objeto instanciado
-        jugadorTemporal.id_jugador = data.id_jugador;
-        return jugadorTemporal;
+        const d = data[0];
+        return new Jugador(d.id_jugador, d.nombre, d.email, d.telefono);
+    }
+
+    /**
+     * Actualiza la información de un jugador existente en la base de datos usando el procedimiento almacenado.
+     * @param {string} email - Correo electrónico del jugador.
+     * @param {string} nombre - Nuevo nombre completo.
+     * @param {string} telefono - Nuevo teléfono de contacto.
+     * @returns {Promise<Jugador>} La instancia del jugador actualizado.
+     * @throws {Error} Si falla la actualización en la BD.
+     */
+    static async actualizarJugador(email, nombre, telefono) {
+        const { data, error } = await supabaseClient
+            .rpc('actualizar_jugador', {
+                p_email: email,
+                p_nombre: nombre,
+                p_telefono: telefono
+            });
+
+        if (error) throw new Error("Error al actualizar jugador: " + error.message);
+        if (!data || data.length === 0) throw new Error("Error al actualizar jugador: jugador no encontrado o no se retornaron datos.");
+
+        const d = data[0];
+        return new Jugador(d.id_jugador, d.nombre, d.email, d.telefono);
     }
 }
+

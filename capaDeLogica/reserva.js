@@ -144,13 +144,21 @@ export class Reserva {
                 return { success: false, error: "Este horario acaba de ser ocupado por otra persona. Recarga la agenda e intenta con otro." };
             }
 
-            // 2. Gestionar Jugador (Buscar o Crear)
+            // 2. Gestionar Jugador (Buscar, Crear o Actualizar)
             let jugador = await Jugador.buscarJugador(email);
             if (!jugador) {
                 if(!nombre || !telefono) {
                     return { success: false, error: "Como es tu primera vez, necesitamos tu Nombre y Teléfono." };
                 }
                 jugador = await Jugador.crearJugador(email, nombre, telefono);
+            } else {
+                // Si el jugador ya existe pero modificó su nombre o teléfono, los actualizamos
+                if (jugador.nombre !== nombre || jugador.telefono !== telefono) {
+                    if (!nombre || !telefono) {
+                        return { success: false, error: "El nombre y el teléfono no pueden estar vacíos." };
+                    }
+                    jugador = await Jugador.actualizarJugador(email, nombre, telefono);
+                }
             }
 
             // 3. Obtener Estado Pendiente

@@ -35,8 +35,11 @@ CREATE POLICY "Permitir insert publico" ON public.estado_pago FOR INSERT WITH CH
 ALTER TABLE public.jugadores ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Permitir select publico" ON public.jugadores;
 DROP POLICY IF EXISTS "Permitir insert publico" ON public.jugadores;
+DROP POLICY IF EXISTS "Permitir update publico" ON public.jugadores;
 CREATE POLICY "Permitir select publico" ON public.jugadores FOR SELECT USING (true);
 CREATE POLICY "Permitir insert publico" ON public.jugadores FOR INSERT WITH CHECK (true);
+CREATE POLICY "Permitir update publico" ON public.jugadores FOR UPDATE USING (true) WITH CHECK (true);
+
 
 -- Políticas para reserva
 ALTER TABLE public.reserva ENABLE ROW LEVEL SECURITY;

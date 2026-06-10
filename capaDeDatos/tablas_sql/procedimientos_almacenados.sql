@@ -56,3 +56,48 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Ejemplo: SELECT * FROM obtener_reservas_activas_por_email('cliente@gmail.com');
+
+-- 2. Crear Jugador
+-- Inserta un nuevo jugador y devuelve la fila correspondiente.
+CREATE OR REPLACE FUNCTION crear_jugador(
+    p_email TEXT,
+    p_nombre TEXT,
+    p_telefono TEXT
+)
+RETURNS TABLE (
+    id_jugador UUID,
+    nombre TEXT,
+    email TEXT,
+    telefono TEXT
+) AS $$
+BEGIN
+    RETURN QUERY
+    INSERT INTO public.jugadores (email, nombre, telefono)
+    VALUES (p_email, p_nombre, p_telefono)
+    RETURNING jugadores.id_jugador, jugadores.nombre, jugadores.email, jugadores.telefono;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 3. Actualizar Jugador
+-- Actualiza el nombre y teléfono de un jugador por su email y devuelve la fila.
+CREATE OR REPLACE FUNCTION actualizar_jugador(
+    p_email TEXT,
+    p_nombre TEXT,
+    p_telefono TEXT
+)
+RETURNS TABLE (
+    id_jugador UUID,
+    nombre TEXT,
+    email TEXT,
+    telefono TEXT
+) AS $$
+BEGIN
+    RETURN QUERY
+    UPDATE public.jugadores
+    SET nombre = p_nombre,
+        telefono = p_telefono
+    WHERE jugadores.email = p_email
+    RETURNING jugadores.id_jugador, jugadores.nombre, jugadores.email, jugadores.telefono;
+END;
+$$ LANGUAGE plpgsql;
+
